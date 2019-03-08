@@ -68,7 +68,6 @@ function postFetchHTTPRequest(url, objects) {
 
 world = {};
 
-//XXX: TODO Make this prettier!
 function drawCircle(context,entity) {
     with(context) {
         beginPath();              
@@ -154,7 +153,6 @@ function getPosition(e) {
 function addEntity(entity, data) {
     world[entity] = data;
     drawNextFrame(); // (but should we?)
-    //XXX: Send a XHTML Request that updates the entity you just  modified!
     var url = "/entity/" + entity
     var objects = world[entity]
     postFetchHTTPRequest(url, objects);
@@ -265,7 +263,6 @@ mouse = (function() {
 })();
 
 // Add the application specific mouse listeners!
-//XXX: TODO Make these prettier!
 mouse.mousedowners.push(function(x,y,clicked,e) {
     addEntityWithoutName({'x':x,'y':y,'colour':'Aquamarine'});
 });
@@ -286,7 +283,6 @@ function browserUpdate(updatedWorld){
 }
 
 function update() {
-    //XXX: TODO Get the world from the webservice using a XMLHTTPRequest
     var callback = browserUpdate;
     callbackFetchHTTPRequest("/world", callback);
     drawFrame();
