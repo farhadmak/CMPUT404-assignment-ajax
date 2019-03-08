@@ -31,35 +31,40 @@ var context = canvas.getContext("2d");
 var W = canvas.width  = window.innerWidth-6;
 var H = canvas.height = window.innerHeight-50;
 
-
-function sendJSONXMLHTTPRequest(url, objects, callback) {
-    var xhr = new XMLHttpRequest();
-    xhr.onreadystatechange = function () {
-        if (xhr.readyState==4) {
-            try {
-                if (xhr.status==200) {
-                    //XXX: parse some JSON from the request!
-                    //XXX: Pass the data to the callback!
-                    callback(xhr.responseText);
-                }
-            } 
-            catch(e) {
-                // console.log(callback(xhr.responseText));
-                console.log('Error: ' + e.name);
-            }
-        }
-    };
-    if (objects != null) {
-        xhr.open("POST", url, true);
-        xhr.setRequestHeader("Accept", "application/json");
-        xhr.setRequestHeader("Content-Type", "application/json");
-        xhr.send(JSON.stringify(objects));
+function fetchSendJSONHTTPRequest(url, objects, callback) {
+    if (objects == null){
+        return fetch(url)
+        .then(response => response.json())
+        .then(body => callback(body));
     }
-    //XXX: POST to a URL
-    //XXX: set the mimetype and the accept headers!
-    // Remember to use application/json !
+    else if (objects != null) {
+        return fetch(url, {
+            method: "POST", 
+            body: JSON.stringify(objects),
+            headers: {
+              "Content-Type": "application/json",
+              "Accept": "application/json"
+            }
+        });
+    }
 }
 
+function callbackFetchHTTPRequest(url, callback) {
+    return fetch(url)
+        .then(response => response.json())
+        .then(body => callback(body));
+}
+
+function postFetchHTTPRequest(url, objects) {
+    return fetch(url, {
+        method: "POST", 
+        body: JSON.stringify(objects),
+        headers: {
+            "Content-Type": "application/json",
+            "Accept": "application/json"
+        }
+    });
+}
 
 world = {};
 
@@ -148,8 +153,7 @@ function addEntity(entity, data) {
     //XXX: Send a XHTML Request that updates the entity you just  modified!
     var url = "/entity/" + entity
     var objects = world[entity]
-    callback = null
-    sendJSONXMLHTTPRequest(url, objects, callback);
+    postFetchHTTPRequest(url, objects);
 
 }
 
@@ -271,11 +275,16 @@ mouse.mousedraggers.push(function(x,y,clicked,e) {
                           'radius':10});
 });
 
+function browserUpdate(updatedWorld){
+    // updatedWorld is from the fetch function in callbackFetchHTTPRequest()
+    world = updatedWorld;
+    drawNextFrame();
+}
 
 function update() {
     //XXX: TODO Get the world from the webservice using a XMLHTTPRequest
-    callback = drawNextFrame();
-    sendJSONXMLHTTPRequest("/world", null, callback);
+    var callback = browserUpdate;
+    callbackFetchHTTPRequest("/world", callback);
     drawFrame();
 }
 
